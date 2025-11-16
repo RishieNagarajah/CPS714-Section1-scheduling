@@ -50,30 +50,11 @@ td{
   background-color: #ffffff;
 }
 
-.ClassList{
-flex: 3 1 30%;
-  position: relative;
-  /* left:2rem; */
-  max-width:45%;
 
-}
-
-.ScheduleObject{
-  /* position:relative; */
-  display:flex;
-  flex-wrap: wrap;
-  width: 100%;
-  gap:1rem;
-  align-items: flex-start;
-}
 
 thead{
       font-size: 2rem;
 
-}
-
-#description{
-        line-height: 1rem;
 }
 
 .JoinButton{
@@ -81,4 +62,17 @@ thead{
         margin: 0 auto;
         display: flex;
         justify-content: center;
+}
+
+.MyClasses{
+  flex: 3 1 30%;
+  max-width:30%;
+  margin-left: auto;
+  align-self: center;
+  /* position: relative; */
+  /* gap: inherit; */
+  padding-left: 2rem;
+  border-left: 10rem;
+  left:2rem;
+
 }

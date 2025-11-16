@@ -32,9 +32,7 @@ table{
   padding: 1%;
   border: 3px solid black; 
   width: 100%;
-/* 
-  border-color: black;
-  border-radius: 2%; */
+
 }
 
 tr{
@@ -55,15 +53,6 @@ td{
   position: relative;
   left:2rem;
   max-width:50%;
-}
-
-.ScheduleObject{
-  /* position:relative; */
-  display:flex;
-  width: 100%;
-  gap:1 rem;
-  align-items: flex-start;
-
 }
 
 thead{

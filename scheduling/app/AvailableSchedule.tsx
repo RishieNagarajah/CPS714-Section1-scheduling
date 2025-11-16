@@ -50,57 +50,5 @@ export default function Schedule() {
           </tbody>
         </table>
     </div>
-    
-        )
-            {/*     <div className="ClassList">
-          <table >
-            {classes.map((c) => (
-              <tr key={c.className}>
-                <td>
-                List of Available Classes
-                </td>
-              </tr>
-              <tr>
-                  <td>
-                    <h2>
-                      Yoga
-                    </h2>
-                    <p>
-                      This is a Yoga Class
-                    </p>
-                    <button>Join Class</button>
-                    <button>Cancel Class</button>
-                  </td>
-
-              </tr>
-              <tr>
-                  <td>
-                    <h2>
-                      Basketball
-                    </h2>
-                    <p>
-                      This is a Basketball Class
-                    </p>
-                  </td>
-              </tr>
-              <tr>
-                  <td>
-                    <h2>
-                      Basketball
-                    </h2>
-                    <p>
-                      <li key={class.id}>{class}</li>
-                    </p>
-                  </td>
-              </tr>
-
-            ))}
-          </table>
-        </div> */}
-
- 
-    
-
-
-
+    )
 }

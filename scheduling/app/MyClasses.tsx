@@ -29,8 +29,6 @@ export default function MyClass() {
                 <h2>{c.className}</h2>
                 <p>{c.date}</p>
                 <p>Instructor: {c.instructor}</p>
-                <p id="description">Description: {c.Description}</p>
-                <p></p>
                 <p>Signups: {c.Signups}/{c.Limit}</p>
                 {/* <button type="button">Join Class</button> */}
                 <div className="JoinButton ">

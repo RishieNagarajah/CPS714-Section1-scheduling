@@ -28,56 +28,21 @@ p {
     line-height: 0.2rem;
 }
 
-table{
-  padding: 1%;
-  border: 3px solid black; 
-  width: 100%;
-/* 
-  border-color: black;
-  border-radius: 2%; */
-}
-
-tr{
-  border: 3px solid black;
-  padding: 1rem;
-}
-td{
-  border: 3px solid black;
-  padding: 1rem;
-  color: black;
-  font-size: 4rem;
-  font-weight: bold;
-  background-color: #ffffff;
-}
-
-.ClassList{
-  flex: 3 1 30%;
-  position: relative;
-  left:2rem;
-  max-width:50%;
-}
-
 .ScheduleObject{
   /* position:relative; */
   display:flex;
   width: 100%;
-  gap:1 rem;
-  align-items: flex-start;
-
+  /* margin-right: 10rem; */
+  /* left: 10rem; */
+  /* margin-left: 10rem; */
+  margin-right: 10rem;
+  gap:rem;
+  /* align-items: flex-start; */
+  /* align-items: center; */
+  min-height: 60vh;
+    min-width:1000px;
+    /* align-items: center; */
+  justify-content: space-around;
+gap: 1rem;
 }
 
-thead{
-      font-size: 2rem;
-
-}
-
-#description{
-        line-height: 1rem;
-}
-
-.JoinButton{
-        align-content: center;
-        margin: 0 auto;
-        display: flex;
-        justify-content: center;
-}
