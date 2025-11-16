@@ -22,6 +22,7 @@ export default function Schedule() {
               </th>
               </tr>
           </thead>
+          <tbody>
           {classes.map((c) => (
             <tr key={c.className}>
               <td>
@@ -46,6 +47,7 @@ export default function Schedule() {
               </td>
             </tr>
           ))}
+          </tbody>
         </table>
     </div>
     
