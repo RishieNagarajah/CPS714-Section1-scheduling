@@ -1,15 +1,30 @@
 import Image from "next/image";
+import Schedule from "./AvailableSchedule";
+import "./schedule.css"
+import Button from '@mui/material/Button';
+import MyClass from "./MyClasses";
+
 
 export default function Home() {
   return (
-    <div className="Background">
-      <main className="main">
-        <div className="Overall">
-          <h1 className="Title">
-            FitHub Scheduling</h1>
-        </div>
+    <main>
 
-      </main>
-    </div>
+    <div className="Background">
+      
+        <div className="Overall">
+            <h1 className="Title">
+                FitHub Scheduling
+            </h1>
+
+            
+        </div >
+
+      <div className="ScheduleObject">
+      <Schedule/>
+      <MyClass/>
+      </div>
+         </div>
+    </main>
+
   );
 }
