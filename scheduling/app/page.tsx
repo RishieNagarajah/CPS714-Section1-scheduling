@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Schedule from "./AvailableSchedule";
-import "./schedule.css"
+import "./page.css"
 import Button from '@mui/material/Button';
 import MyClass from "./MyClasses";
+
 
 
 export default function Home() {

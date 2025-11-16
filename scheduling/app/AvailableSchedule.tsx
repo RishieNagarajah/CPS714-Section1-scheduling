@@ -1,4 +1,4 @@
-import "./schedule.css"
+import "./AvailableSchedule.css"
 import Button from '@mui/material/Button';
 
 

@@ -1,4 +1,4 @@
-import "./Myclass.css"
+import "./MyClasses.css"
 import Button from '@mui/material/Button';
 
 
