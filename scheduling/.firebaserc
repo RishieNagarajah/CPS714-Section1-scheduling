@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "fithub-classes",
+    "fithub": "fithub-classes"
+  },
+  "targets": {},
+  "etags": {}
+}
