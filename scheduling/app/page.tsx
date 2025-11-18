@@ -3,7 +3,8 @@ import Schedule from "./AvailableSchedule";
 import "./page.css"
 import Button from '@mui/material/Button';
 import MyClass from "./MyClasses";
-
+import "bootstrap/dist/css/bootstrap.min.css";
+import NavigationBar from "./Navbar";
 
 
 export default function Home() {
@@ -11,7 +12,8 @@ export default function Home() {
     <main>
 
     <div className="Background">
-      
+              <NavigationBar />
+
         <div className="Overall">
             <h1 className="Title">
                 FitHub Scheduling
