@@ -1,10 +1,8 @@
-'use client';
 
 import type { Metadata } from "next";
 // import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import NavigationBar from "./Navbar";
+
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
 //   subsets: ["latin"],
@@ -30,7 +28,6 @@ export default function RootLayout({
       <body
         // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NavigationBar />
         <div style={{ marginTop : '70px' }}>
         {children}
         </div>
