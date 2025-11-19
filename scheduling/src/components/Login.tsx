@@ -20,9 +20,10 @@ import {
   Email,
   Lock,
 } from '@mui/icons-material';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { fire } from '../../src/lib/firebase/main';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 import { FirebaseError } from 'firebase/app';
+import { useRouter } from 'next/navigation';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -82,7 +83,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const auth = getAuth(fire);
+  const router = useRouter();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -151,10 +152,16 @@ export default function Login() {
         // Sign In
         await signInWithEmailAndPassword(auth, formData.email, formData.password);
         console.log('User signed in successfully');
+
+        // Redirect to home
+        router.push('/');
       } else {
         // Sign Up
         await createUserWithEmailAndPassword(auth, formData.email, formData.password);
         console.log('User created successfully');
+
+        // Redirect to home
+        router.push('/');
       }
     } catch (error) {
       if (error instanceof FirebaseError) {
@@ -189,14 +196,6 @@ export default function Login() {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      console.log('User signed out successfully');
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
-  };
 
   return (
     <Container component="main" maxWidth="sm">
