@@ -3,10 +3,15 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
-import { auth } from '@/lib/firebase';
+import { auth, firestore } from '@/lib/firebase';
+import { collection, doc, getDoc } from 'firebase/firestore';
+
+type CustomUser = User & {
+  membershipStatus?: string;
+};
 
 type AuthContextType = {
-  user: User | null;
+  user: CustomUser | null;
   loading: boolean;
 };
 
@@ -25,8 +30,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push('/login');
       }
 
-      setUser(user);
-      setLoading(false);
+      if (user) {
+        getDoc(doc(collection(firestore, 'users'), user?.uid)).then((docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            const customUser = user as CustomUser;
+            customUser.membershipStatus = data.membershipStatus;
+            console.log("Fetched user profile:", user, customUser);
+            setUser(customUser);
+          } else {
+            setUser(user);
+          }
+          setLoading(false);
+        });
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
@@ -36,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   if (loading) {
     return <div>Loading...</div>;
   }
-  
+
   if (!user && pathname !== '/login') {
     return null;
   }
