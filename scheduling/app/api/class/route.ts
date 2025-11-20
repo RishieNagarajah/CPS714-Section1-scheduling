@@ -146,7 +146,72 @@ export async function POST(request: Request) {
 
 
 export async function DELETE(request: Request) {
-  // TODO: Unenroll a user from a class
+  const app = getAdmin();
+  const auth = getAuth(app);
+  const firestore = getFirestore(app);
 
-  return new Response('Not Implemented', { status: 501 });
+  const token = request.headers.get("Authorization")?.split(" ")[1];
+  if (!token) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  const decodedToken = await auth.verifyIdToken(token);
+  if (!decodedToken.uid) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { classId } = body;
+
+    if (!classId) {
+      return Response.json(
+        { message: 'Class ID is required' },
+        { status: 400 }
+      );
+    }
+    const existingEnrollment = await firestore
+      .collection("enrollments")
+      .where("userId", "==", decodedToken.uid)
+      .where("classId", "==", classId)
+      .where("status", "==", "active")
+      .get();
+
+    if (existingEnrollment.empty) {
+      return Response.json(
+        { message: "Enrollment not found" },
+        { status: 404 }
+      );
+    }
+    const enrollmentDoc = existingEnrollment.docs[0];
+    const classRef = firestore.collection("classes").doc(classId);
+
+    await firestore.runTransaction(async (transaction) => {
+      const classDoc = await transaction.get(classRef);
+
+      if (!classDoc.exists) {
+        throw new Error("Class not found");
+      }
+
+      const classData = classDoc.data();
+      const currentSignups = classData?.currentSignups || 1;
+
+      transaction.update(classRef, {
+        currentSignups: Math.max(currentSignups - 1, 0),
+      });
+
+      transaction.delete(enrollmentDoc.ref);
+    });
+
+    return Response.json(
+      {
+        message: "Successfully unenrolled from class",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting enrollment from class:", error);
+    return Response.json(
+      { message: "Internal Server Error", status: 500, error }
+    );
+  }
 }
