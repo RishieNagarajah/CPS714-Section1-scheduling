@@ -36,7 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = docSnap.data();
             const customUser = user as CustomUser;
             customUser.membershipStatus = data.membershipStatus;
-            console.log("Fetched user profile:", user, customUser);
             setUser(customUser);
           } else {
             setUser(user);
