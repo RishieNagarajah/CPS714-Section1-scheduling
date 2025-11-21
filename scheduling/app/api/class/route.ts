@@ -1,28 +1,20 @@
 import { getAdmin } from "@/lib/firebase/admin";
-import { getAuth } from "firebase-admin/auth";
+import { getUidFromRequest } from "@/lib/server/idToken";
 import { getFirestore } from "firebase-admin/firestore";
-
-
+import { documentId } from "firebase/firestore";
 
 export async function GET(request: Request) {
-
   const app = getAdmin();
-  const auth = getAuth(app);
   const firestore = getFirestore(app);
 
-  const token = request.headers.get("Authorization")?.split(" ")[1];
-  if (!token) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-  const decodedToken = await auth.verifyIdToken(token);
-  if (!decodedToken.uid) {
+  const uid = await getUidFromRequest(request);
+  if (!uid) {
     return new Response('Unauthorized', { status: 401 });
   }
 
   try {
     const userEnrollments = await firestore
-      .collection('enrollments')
-      .where('userId', '==', decodedToken.uid)
+      .collection(`users/${uid}/enrollments`)
       .where('status', '==', 'active')
       .get();
 
@@ -31,37 +23,45 @@ export async function GET(request: Request) {
     if (classIds.length === 0) {
       return Response.json({ classes: [] }, { status: 200 });
     }
-    const classesPromises = classIds.map(classId =>
-      firestore.collection('classes').doc(classId).get()
-    );
-    const classesConfirmations = await Promise.all(classesPromises);
 
-    const enrolledClasses = classesConfirmations
-      .filter(doc => doc.exists)
+    let classes;
+
+    if (classIds.length > 30) {
+      const batches = [];
+      for (let i = 0; i < classIds.length; i += 30) {
+        const batch = classIds.slice(i, i + 30);
+        batches.push(
+          firestore
+            .collection('classes')
+            .where(documentId(), 'in', batch)
+            .get()
+        );
+      }
+
+      classes = (await Promise.all(batches)).flatMap(snapshot => snapshot.docs);
+    }
+
+    classes = (await firestore
+      .collection('classes')
+      .where(documentId(), 'in', classIds)
+      .get()).docs;
+
+    const enrolledClasses = classes
       .map(doc => ({ id: doc.id, ...doc.data() }));
 
     return Response.json({ classes: enrolledClasses }, { status: 200 });
-
   } catch (error) {
     console.error('Error fetching enrolled classes:', error);
     return Response.json({ message: 'Internal Server Error', status: 500, error });
   }
-
 }
-
-
 
 export async function POST(request: Request) {
   const app = getAdmin();
-  const auth = getAuth(app);
   const firestore = getFirestore(app);
 
-  const token = request.headers.get("Authorization")?.split(" ")[1];
-  if (!token) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-  const decodedToken = await auth.verifyIdToken(token);
-  if (!decodedToken.uid) {
+  const uid = await getUidFromRequest(request);
+  if (!uid) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -76,15 +76,12 @@ export async function POST(request: Request) {
       );
     }
 
-
     const classRef = firestore.collection('classes').doc(classId);
     const classDoc = await classRef.get();
-
 
     if (!classDoc.exists) {
       return Response.json({ message: 'Class not found' }, { status: 404 });
     }
-
 
     const classData = classDoc.data();
     const totalSeats = classData?.totalSeats || 0;
@@ -98,10 +95,8 @@ export async function POST(request: Request) {
       );
     }
 
-
     const existingEnrollment = await firestore
-      .collection('enrollments')
-      .where('userId', '==', decodedToken.uid)
+      .collection(`users/${uid}/enrollments`)
       .where('classId', '==', classId)
       .where('status', '==', 'active')
       .get();
@@ -113,18 +108,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const timestamp = new Date();
 
     await firestore.runTransaction(async (transaction) => {
       transaction.update(classRef, {
         currentSignups: currentSignups + 1,
       });
 
-
-      const enrollmentRef = firestore.collection('enrollments').doc();
+      const enrollmentRef = firestore.collection(`users/${uid}/enrollments`).doc(classId);
       transaction.set(enrollmentRef, {
-        userId: decodedToken.uid,
-        classId: classId,
-        enrolledAt: new Date().toISOString(),
+        enrolledAt: timestamp,
         status: 'active'
       });
     });
@@ -134,28 +127,22 @@ export async function POST(request: Request) {
       {
         message: "Successfully enrolled in class",
         classId: classId,
+        enrolledAt: timestamp.toISOString(),
       },
       { status: 201 }
     );
-
   } catch (error) {
     console.error('Error enrolling in class:', error);
     return Response.json({ message: 'Internal Server Error', status: 500, error });
   }
 }
 
-
 export async function DELETE(request: Request) {
   const app = getAdmin();
-  const auth = getAuth(app);
   const firestore = getFirestore(app);
 
-  const token = request.headers.get("Authorization")?.split(" ")[1];
-  if (!token) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-  const decodedToken = await auth.verifyIdToken(token);
-  if (!decodedToken.uid) {
+  const uid = await getUidFromRequest(request);
+  if (!uid) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -170,48 +157,45 @@ export async function DELETE(request: Request) {
       );
     }
     const existingEnrollment = await firestore
-      .collection("enrollments")
-      .where("userId", "==", decodedToken.uid)
-      .where("classId", "==", classId)
-      .where("status", "==", "active")
+      .doc(`users/${uid}/enrollments/${classId}`)
       .get();
 
-    if (existingEnrollment.empty) {
+    if (!existingEnrollment.exists) {
       return Response.json(
         { message: "Enrollment not found" },
-        { status: 404 }
+        { status: 400 }
       );
     }
-    const enrollmentDoc = existingEnrollment.docs[0];
-    const classRef = firestore.collection("classes").doc(classId);
+
+    const classDoc = await firestore.doc(`classes/${existingEnrollment.id}`).get();
+
+    if (classDoc.exists === false) {
+      return Response.json(
+        { message: "Class not found" },
+        { status: 500 }
+      );
+    }
 
     await firestore.runTransaction(async (transaction) => {
-      const classDoc = await transaction.get(classRef);
-
-      if (!classDoc.exists) {
-        throw new Error("Class not found");
-      }
-
       const classData = classDoc.data();
       const currentSignups = classData?.currentSignups || 1;
 
-      transaction.update(classRef, {
+      transaction.update(classDoc.ref, {
         currentSignups: Math.max(currentSignups - 1, 0),
       });
 
-      transaction.delete(enrollmentDoc.ref);
+      transaction.delete(existingEnrollment.ref);
     });
 
     return Response.json(
-      {
-        message: "Successfully unenrolled from class",
-      },
+      { message: "Successfully unenrolled from class" },
       { status: 200 }
     );
   } catch (error) {
     console.error("Error deleting enrollment from class:", error);
     return Response.json(
-      { message: "Internal Server Error", status: 500, error }
+      { message: "Internal Server Error", error },
+      { status: 500 }
     );
   }
 }
