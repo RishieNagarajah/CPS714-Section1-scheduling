@@ -19,9 +19,10 @@ import {
   VisibilityOff,
   Email,
   Lock,
+  Person,
 } from '@mui/icons-material';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { FirebaseError } from 'firebase/app';
 import { useRouter } from 'next/navigation';
 
@@ -59,12 +60,14 @@ function a11yProps(index: number) {
 }
 
 interface FormData {
+  name?: string;
   email: string;
   password: string;
   confirmPassword?: string;
 }
 
 interface FormErrors {
+  name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -93,6 +96,13 @@ export default function Login() {
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
+
+    // Name validation (only for sign up)
+    if (tabValue === 1) {
+      if (!formData.name) {
+        newErrors.name = 'Full name is required';
+      }
+    }
 
     // Email validation
     if (!formData.email) {
@@ -158,6 +168,17 @@ export default function Login() {
       } else {
         // Sign Up
         await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        await updateProfile(auth.currentUser!, {
+          displayName: formData.name,
+        });
+        await fetch('/api/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+          },
+        });
+        
         console.log('User created successfully');
 
         // Redirect to home
@@ -207,7 +228,7 @@ export default function Login() {
           alignItems: 'center',
         }}
       >
-        <Paper elevation={3} sx={{ width: '100%', borderRadius: 2 }}>
+        <Paper elevation={1} sx={{ width: '100%', borderRadius: 2 }}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="login tabs">
               <Tab label="Sign In" {...a11yProps(0)} />
@@ -240,6 +261,33 @@ export default function Login() {
               </Alert>
             )}
 
+            {
+              tabValue === 0 ? null :
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="name"
+                  label="Full Name"
+                  name="name"
+                  autoComplete="name"
+                  autoFocus
+                  value={formData.name || ''}
+                  onChange={handleInputChange('name')}
+                  error={!!errors.name}
+                  helperText={errors.name}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person color="action" />
+                        </InputAdornment>
+                      ),
+                    }
+                  }}
+                />
+            }
+
             <TextField
               margin="normal"
               required
@@ -248,17 +296,19 @@ export default function Login() {
               label="Email Address"
               name="email"
               autoComplete="email"
-              autoFocus
+              autoFocus={tabValue === 0}
               value={formData.email}
               onChange={handleInputChange('email')}
               error={!!errors.email}
               helperText={errors.email}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email color="action" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email color="action" />
+                    </InputAdornment>
+                  ),
+                }
               }}
             />
 
@@ -275,23 +325,21 @@ export default function Login() {
               onChange={handleInputChange('password')}
               error={!!errors.password}
               helperText={errors.password}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: <InputAdornment position="start"><Lock color="action" /></InputAdornment>,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }
               }}
             />
 
@@ -308,23 +356,25 @@ export default function Login() {
                 onChange={handleInputChange('confirmPassword')}
                 error={!!errors.confirmPassword}
                 helperText={errors.confirmPassword}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock color="action" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle confirm password visibility"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        edge="end"
-                      >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle confirm password visibility"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          edge="end"
+                        >
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }
                 }}
               />
             )}
@@ -333,32 +383,14 @@ export default function Login() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{
-                mt: 3,
-                mb: 2,
-                py: 1.5,
-                backgroundColor: '#00d736ff',
-                '&:hover': {
-                  backgroundColor: '#33ff36ff',
-                },
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-              }}
+              color='success'
+              className='mt-3'
               disabled={loading}
             >
               {loading ? 'Processing...' : (tabValue === 0 ? 'Sign In' : 'Create Account')}
             </Button>
           </Box>
         </Paper>
-
-        {/* Example of how to handle sign out (you might want to move this to a separate component) */}
-        {/* <Button
-          variant="outlined"
-          onClick={handleSignOut}
-          sx={{ mt: 2 }}
-        >
-          Sign Out
-        </Button> */}
       </Box>
     </Container>
   );
