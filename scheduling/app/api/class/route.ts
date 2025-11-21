@@ -1,7 +1,6 @@
 import { getAdmin } from "@/lib/firebase/admin";
 import { getUidFromRequest } from "@/lib/server/idToken";
-import { getFirestore } from "firebase-admin/firestore";
-import { documentId } from "firebase/firestore";
+import { FieldPath, getFirestore } from "firebase-admin/firestore";
 
 export async function GET(request: Request) {
   const app = getAdmin();
@@ -18,7 +17,7 @@ export async function GET(request: Request) {
       .where('status', '==', 'active')
       .get();
 
-    const classIds = userEnrollments.docs.map(doc => doc.data().classId);
+    const classIds = userEnrollments.docs.map(doc => doc.id);
 
     if (classIds.length === 0) {
       return Response.json({ classes: [] }, { status: 200 });
@@ -33,7 +32,7 @@ export async function GET(request: Request) {
         batches.push(
           firestore
             .collection('classes')
-            .where(documentId(), 'in', batch)
+            .where(FieldPath.documentId(), 'in', batch)
             .get()
         );
       }
@@ -43,11 +42,16 @@ export async function GET(request: Request) {
 
     classes = (await firestore
       .collection('classes')
-      .where(documentId(), 'in', classIds)
+      .where(FieldPath.documentId(), 'in', classIds)
       .get()).docs;
 
     const enrolledClasses = classes
-      .map(doc => ({ id: doc.id, ...doc.data() }));
+      .map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+        startTimestamp: doc.data().startTimestamp.toDate().toISOString(),
+        endTimestamp: doc.data().endTimestamp.toDate().toISOString(),
+      }));
 
     return Response.json({ classes: enrolledClasses }, { status: 200 });
   } catch (error) {

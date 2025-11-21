@@ -15,7 +15,15 @@ export async function GET() {
   }
 
   const availableClasses = classes.docs
-    .map(doc => ({ id: doc.id, ...doc.data() }));
+    .map(doc => {
+      const data = doc.data();
+      return ({
+        ...doc.data(),
+        id: doc.id,
+        startTimestamp: data.startTimestamp.toDate(),
+        endTimestamp: data.endTimestamp.toDate()
+      })
+    });
 
   return Response.json({ classes: availableClasses }, { status: 200 });
 }
