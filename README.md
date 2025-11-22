@@ -14,6 +14,10 @@
 Set up repository
 ```
 git clone [https://github.com/RishieNagarajah/CPS714-Section1-scheduling.git\
+```
+
+Once you have cloned the repository, open up the terminal in the folder where the project is located and run the following commands: 
+```
 cd /scheduling
 npm install
 npm run dev
