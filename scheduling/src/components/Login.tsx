@@ -178,7 +178,7 @@ export default function Login() {
             'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
           },
         });
-        
+
         console.log('User created successfully');
 
         // Redirect to home
@@ -190,11 +190,8 @@ export default function Login() {
 
         // Handle specific Firebase errors
         switch (error.code) {
-          case 'auth/user-not-found':
-            setErrors({ general: 'No user found with this email address' });
-            break;
-          case 'auth/wrong-password':
-            setErrors({ general: 'Incorrect password' });
+          case 'auth/invalid-credential':
+            setErrors({ general: 'Invalid email or password' });
             break;
           case 'auth/email-already-in-use':
             setErrors({ general: 'An account with this email already exists' });
