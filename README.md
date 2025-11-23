@@ -10,14 +10,15 @@
 - API endpoints and all request handling was done with NodeJS/Firebase
 
 ## Try it out 🏗
-Set up repository
+Set up repository 
 ```
 git clone https://github.com/RishieNagarajah/CPS714-Section1-scheduling.git/
 ```
 
+This sytem was tested on node v24.11.1
 Once you have cloned the repository, open up the terminal in the folder where the project is located and run the following commands: 
 ```
-cd /scheduling
+cd scheduling
 npm install
 npm run dev
 ```
@@ -41,3 +42,4 @@ Once you joined a class, you can see it unde the right hand side of the screen i
 ![My Classes](images/cps714readmeimage5.png)
 
 ![My Classes](images/cps714readmeimage6.png)
+
