@@ -12,7 +12,7 @@
 ## Try it out 🏗
 Set up repository
 ```
-git clone [https://github.com/RishieNagarajah/CPS714-Section1-scheduling.git\
+git clone https://github.com/RishieNagarajah/CPS714-Section1-scheduling.git/
 ```
 
 Once you have cloned the repository, open up the terminal in the folder where the project is located and run the following commands: 
@@ -39,4 +39,5 @@ You can know see the list of available classes available for your profile, Click
 
 Once you joined a class, you can see it unde the right hand side of the screen in the "My Classes" Section, Click the "Join" Button on multiple classes. Additionally Click "Cancel" on any of the classes to remove the class from the "My Classes" Section.
 ![My Classes](images/cps714readmeimage5.png)
+
 ![My Classes](images/cps714readmeimage6.png)
